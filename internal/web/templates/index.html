@@ -88,13 +88,12 @@
                             <option value="debug" {{if eq .CurrentSeverity "debug"}}selected{{end}}>debug</option>
                         </select>
                     </div>
-                    <div style="flex:1;">
-                        <label for="target">Target</label>
-                        <select name="target" id="target">
-                            <option value="redis">Redis Direct</option>
-                            <option value="omni-pitcher">Omni-Pitcher</option>
-                            <option value="both">Both</option>
-                        </select>
+                    <div style="flex:2;">
+                        <label for="target_url">Target Pitcher URL</label>
+                        <input type="text" name="target_url" id="target_url"
+                               placeholder="https://pitcher.movie-scripts2.sthings-vsphere.labul.sva.de"
+                               value="{{.TargetURL}}"
+                               style="font-size:0.8rem;">
                     </div>
                 </div>
 

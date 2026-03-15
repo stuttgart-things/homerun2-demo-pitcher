@@ -233,16 +233,34 @@ func registerWebRoutes(
 
 	enabled := homerun.GetEnv("PITCH_ENABLED", "false") == "true"
 
+	// If profile has a target_url, use an HTTP pitcher for the scheduler.
+	var schedPitcher pitcher.Pitcher = primaryPitcher
+	if prof.TargetURL != "" {
+		schedPitcher = &pitcher.HTTPPitcher{
+			Endpoint:   prof.TargetURL,
+			APIPath:    homerun.GetEnv("OMNI_PITCHER_API_PATH", "generic"),
+			AuthToken:  homerun.GetEnv("AUTH_TOKEN", ""),
+			HTTPClient: pitcher.DefaultHTTPClient(),
+		}
+		slog.Info("scheduler using profile target_url", "url", prof.TargetURL)
+	}
+
 	var sched *scheduler.Scheduler
-	if primaryPitcher != nil {
+	if schedPitcher != nil {
 		schedCfg := scheduler.Config{
 			Interval:  interval,
 			BurstSize: burst,
 			Enabled:   enabled,
 		}
-		sched = scheduler.New(schedCfg, aiGen, primaryPitcher)
+		sched = scheduler.New(schedCfg, aiGen, schedPitcher)
 		sched.Start()
 		slog.Info("scheduler configured", "enabled", enabled, "interval", intervalStr, "burst", burst)
+	}
+
+	// Determine default target URL from profile or env.
+	defaultTargetURL := homerun.GetEnv("TARGET_URL", prof.TargetURL)
+	if defaultTargetURL == "" {
+		defaultTargetURL = homerun.GetEnv("OMNI_PITCHER_URL", "http://localhost:4000")
 	}
 
 	// Web handlers.
@@ -252,6 +270,7 @@ func registerWebRoutes(
 		allPitchers,
 		sched,
 		intervalStr,
+		defaultTargetURL,
 		buildInfo,
 	)
 

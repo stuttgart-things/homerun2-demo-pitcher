@@ -105,6 +105,11 @@ func (p *HTTPPitcher) doPost(url string, body []byte) (*httpResponse, error) {
 	return &result, nil
 }
 
+// DefaultHTTPClient returns a pre-configured HTTP client for pitcher requests.
+func DefaultHTTPClient() *http.Client {
+	return &http.Client{Timeout: 10 * time.Second}
+}
+
 // HealthCheck verifies the remote pitcher is reachable.
 func (p *HTTPPitcher) HealthCheck(ctx context.Context) error {
 	url := fmt.Sprintf("%s/health", p.Endpoint)
