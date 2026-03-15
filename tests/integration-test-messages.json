@@ -1,0 +1,58 @@
+[
+  {
+    "title": "Integration Test - Error Alert",
+    "message": "CPU usage exceeded 95% on production cluster",
+    "severity": "error",
+    "author": "integration-test",
+    "system": "monitoring",
+    "tags": "test,integration"
+  },
+  {
+    "title": "Integration Test - Warning Disk Space",
+    "message": "Disk usage at 82% on storage-node-03, approaching threshold",
+    "severity": "warning",
+    "author": "integration-test",
+    "system": "storage",
+    "tags": "test,integration,storage"
+  },
+  {
+    "title": "Integration Test - Info Deployment",
+    "message": "Service api-gateway deployed successfully to production, version v2.4.1",
+    "severity": "info",
+    "author": "integration-test",
+    "system": "ci-cd",
+    "tags": "test,integration,deployment"
+  },
+  {
+    "title": "Integration Test - Critical Database",
+    "message": "Primary database connection pool exhausted, failover initiated",
+    "severity": "critical",
+    "author": "integration-test",
+    "system": "database",
+    "tags": "test,integration,database"
+  },
+  {
+    "title": "Integration Test - Success Health Check",
+    "message": "All upstream services responding within SLA targets",
+    "severity": "success",
+    "author": "integration-test",
+    "system": "health-checker",
+    "tags": "test,integration,health"
+  },
+  {
+    "title": "Integration Test - Debug Trace",
+    "message": "Request trace ID abc-123-def captured for latency analysis on auth-service",
+    "severity": "debug",
+    "author": "integration-test",
+    "system": "auth-service",
+    "tags": "test,integration,tracing"
+  },
+  {
+    "title": "Integration Test - Warning Memory Pressure",
+    "message": "Memory usage at 78% on worker-pool-2, GC cycles increasing",
+    "severity": "warning",
+    "author": "integration-test",
+    "system": "compute",
+    "tags": "test,integration,memory"
+  }
+]
