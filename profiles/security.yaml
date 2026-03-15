@@ -1,0 +1,100 @@
+name: security
+description: Security event simulation profile
+
+severities:
+  error: 25
+  warning: 35
+  info: 30
+  success: 5
+  debug: 5
+
+systems:
+  - firewall
+  - waf
+  - vault
+  - keycloak
+  - falco
+  - trivy
+  - cert-manager
+
+authors:
+  - security-scanner
+  - soc-bot
+  - audit-daemon
+  - policy-engine
+
+tags:
+  - security
+  - compliance
+  - vulnerability
+  - access-control
+  - audit
+
+assignees:
+  - name: security-team
+    address: security@example.com
+  - name: soc-oncall
+    address: soc@example.com
+  - name: compliance-officer
+    address: compliance@example.com
+
+urls:
+  - "https://siem.example.com/events/{{.EventID}}"
+  - "https://vault.example.com/ui/vault/secrets"
+
+artifacts:
+  - "audit/{{.System}}/{{.Timestamp}}.json"
+  - "scans/{{.System}}/report-{{.ScanID}}.html"
+
+templates:
+  error:
+    titles:
+      - "[CRITICAL] {{.System}} unauthorized access attempt detected"
+      - "[CRITICAL] {{.System}} CVE with CVSS >= 9.0 found"
+      - "[CRITICAL] {{.System}} secret lease expired"
+      - "[CRITICAL] {{.System}} intrusion detection alert"
+    messages:
+      - "Unauthorized access attempt on {{.System}} from IP {{.SourceIP}}. Account locked after {{.Attempts}} failed attempts."
+      - "Critical vulnerability CVE-{{.CVEID}} (CVSS {{.Score}}) detected in {{.System}}. Immediate patching required."
+      - "Secret lease in {{.System}} has expired. Dependent services may lose access. Rotate credentials immediately."
+      - "Falco detected suspicious activity on {{.System}}: {{.Rule}} triggered. Process: {{.Process}}."
+
+  warning:
+    titles:
+      - "[WARN] {{.System}} unusual login pattern"
+      - "[WARN] {{.System}} policy violation detected"
+      - "[WARN] {{.System}} certificate chain incomplete"
+      - "[WARN] {{.System}} elevated privilege usage"
+    messages:
+      - "Unusual login pattern detected on {{.System}}: login from {{.Location}} at {{.Timestamp}}. Review recommended."
+      - "Policy violation on {{.System}}: {{.Policy}} was violated by {{.Actor}}. Remediation deadline: {{.Deadline}}."
+      - "Certificate chain for {{.System}} is incomplete. Missing intermediate CA. TLS handshakes may fail."
+      - "Elevated privileges used on {{.System}} by {{.Actor}}. Action: {{.Action}}. Ensure this was authorized."
+
+  info:
+    titles:
+      - "[INFO] {{.System}} security scan completed"
+      - "[INFO] {{.System}} access policy updated"
+      - "[INFO] {{.System}} audit log rotated"
+      - "[INFO] {{.System}} new user provisioned"
+    messages:
+      - "Security scan of {{.System}} completed. Found {{.Findings}} findings ({{.Critical}} critical, {{.High}} high)."
+      - "Access policy for {{.System}} updated by {{.Author}}. Changes: {{.Changes}}."
+      - "Audit logs for {{.System}} have been rotated and archived. Retention: {{.RetentionDays}} days."
+      - "New user {{.Username}} provisioned on {{.System}} with role {{.Role}} by {{.Author}}."
+
+  success:
+    titles:
+      - "[OK] {{.System}} vulnerability remediated"
+      - "[OK] {{.System}} compliance check passed"
+    messages:
+      - "Vulnerability {{.CVEID}} on {{.System}} has been successfully remediated."
+      - "{{.System}} passed all {{.Framework}} compliance checks. Next audit: {{.NextAudit}}."
+
+  debug:
+    titles:
+      - "[DEBUG] {{.System}} auth token refresh"
+      - "[DEBUG] {{.System}} policy evaluation trace"
+    messages:
+      - "Auth token for {{.System}} refreshed. TTL: {{.TTL}}s. Method: {{.AuthMethod}}."
+      - "Policy evaluation on {{.System}}: input={{.Input}}, result={{.Result}}, duration={{.Duration}}ms."

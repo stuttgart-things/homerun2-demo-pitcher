@@ -1,0 +1,91 @@
+name: default
+description: Generic monitoring and ops message profile
+
+severities:
+  error: 10
+  warning: 20
+  info: 50
+  success: 10
+  debug: 10
+
+systems:
+  - k8s-cluster
+  - prometheus
+  - argocd
+  - vault
+  - redis
+
+authors:
+  - ops-bot
+  - monitoring
+  - ci-pipeline
+
+tags:
+  - infrastructure
+  - deployment
+  - monitoring
+  - security
+  - performance
+
+assignees:
+  - name: oncall-primary
+    address: oncall@example.com
+  - name: platform-team
+    address: platform@example.com
+
+urls:
+  - "https://grafana.example.com/d/{{.System}}"
+  - "https://argocd.example.com/applications/{{.System}}"
+
+artifacts:
+  - "logs/{{.System}}/{{.Timestamp}}.log"
+  - "metrics/{{.System}}/snapshot.json"
+
+templates:
+  error:
+    titles:
+      - "[ERROR] {{.System}} health check failed"
+      - "[ERROR] {{.System}} pod crash loop detected"
+      - "[ERROR] {{.System}} connection timeout"
+    messages:
+      - "Health check for {{.System}} has been failing for the last 5 minutes. Immediate attention required."
+      - "Multiple pods in {{.System}} are in CrashLoopBackOff state. Last restart: {{.Timestamp}}."
+      - "Connection to {{.System}} timed out after 30s. Upstream may be unreachable."
+
+  warning:
+    titles:
+      - "[WARN] {{.System}} high memory usage"
+      - "[WARN] {{.System}} certificate expiring soon"
+      - "[WARN] {{.System}} disk usage above 80%"
+    messages:
+      - "Memory usage on {{.System}} has exceeded 85% threshold. Current: {{.Value}}%."
+      - "TLS certificate for {{.System}} expires in 7 days. Renewal recommended."
+      - "Disk usage on {{.System}} is at {{.Value}}%. Consider cleanup or expansion."
+
+  info:
+    titles:
+      - "[INFO] {{.System}} deployment completed"
+      - "[INFO] {{.System}} scaling event"
+      - "[INFO] {{.System}} configuration updated"
+      - "[INFO] {{.System}} backup completed"
+    messages:
+      - "Deployment to {{.System}} completed successfully. Version: {{.Version}}."
+      - "{{.System}} scaled from {{.OldReplicas}} to {{.NewReplicas}} replicas."
+      - "Configuration for {{.System}} has been updated by {{.Author}}."
+      - "Scheduled backup for {{.System}} completed. Size: {{.Size}}."
+
+  success:
+    titles:
+      - "[OK] {{.System}} recovery confirmed"
+      - "[OK] {{.System}} pipeline passed"
+    messages:
+      - "{{.System}} has recovered and all health checks are passing."
+      - "CI/CD pipeline for {{.System}} completed successfully. All tests passed."
+
+  debug:
+    titles:
+      - "[DEBUG] {{.System}} trace collected"
+      - "[DEBUG] {{.System}} cache statistics"
+    messages:
+      - "Trace data collected from {{.System}}. Span count: {{.SpanCount}}."
+      - "Cache hit ratio for {{.System}}: {{.HitRatio}}%. Evictions: {{.Evictions}}."
