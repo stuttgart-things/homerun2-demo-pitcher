@@ -196,7 +196,25 @@ func registerWebRoutes(
 ) {
 	// Load profile.
 	prof := loadProfile()
-	gen := generator.New(profileToGeneratorProfile(prof))
+	genProfile := profileToGeneratorProfile(prof)
+
+	// AI configuration (optional).
+	aiCfg := generator.AIConfig{
+		Enabled:  homerun.GetEnv("AI_ENABLED", "false") == "true",
+		Provider: homerun.GetEnv("AI_PROVIDER", "ollama"),
+		Model:    homerun.GetEnv("AI_MODEL", "llama3"),
+		Endpoint: homerun.GetEnv("AI_ENDPOINT", "http://localhost:11434"),
+		APIKey:   homerun.GetEnv("AI_API_KEY", ""),
+	}
+
+	// Create standard generator (always used for web handlers).
+	gen := generator.New(genProfile)
+
+	// Create AI generator for the scheduler when AI is enabled.
+	aiGen := generator.NewAIGenerator(genProfile, aiCfg)
+	if aiCfg.Enabled {
+		slog.Info("AI-powered generation enabled", "provider", aiCfg.Provider, "model", aiCfg.Model)
+	}
 
 	// Scheduler config.
 	intervalStr := homerun.GetEnv("PITCH_INTERVAL", "10s")
@@ -222,7 +240,7 @@ func registerWebRoutes(
 			BurstSize: burst,
 			Enabled:   enabled,
 		}
-		sched = scheduler.New(schedCfg, gen, primaryPitcher)
+		sched = scheduler.New(schedCfg, aiGen, primaryPitcher)
 		sched.Start()
 		slog.Info("scheduler configured", "enabled", enabled, "interval", intervalStr, "burst", burst)
 	}
