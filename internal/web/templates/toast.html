@@ -1,0 +1,5 @@
+{{if eq .Status "success"}}
+<div class="toast-success">{{.Message}}</div>
+{{else}}
+<div class="toast-error">{{.Message}}</div>
+{{end}}

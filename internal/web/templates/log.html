@@ -1,0 +1,24 @@
+{{if .Entries}}
+<table>
+    <thead>
+        <tr>
+            <th>Time</th>
+            <th>Title</th>
+            <th>Severity</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .Entries}}
+        <tr>
+            <td>{{.Time}}</td>
+            <td>{{.Title}}</td>
+            <td><span class="severity-{{.Severity}}">{{.Severity}}</span></td>
+            <td>{{.Status}}</td>
+        </tr>
+        {{end}}
+    </tbody>
+</table>
+{{else}}
+<p style="color:#64748b;font-size:0.85rem;">No messages sent yet.</p>
+{{end}}
