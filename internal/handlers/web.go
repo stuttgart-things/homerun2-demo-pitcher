@@ -75,6 +75,7 @@ type IndexData struct {
 	SchedulerRunning  bool
 	SchedulerInterval string
 	SchedulerPitched  int64
+	TargetURL         string
 	Version           string
 	Commit            string
 	Date              string
@@ -93,13 +94,14 @@ type ToastData struct {
 
 // WebHandlers groups the web UI handlers and their shared state.
 type WebHandlers struct {
-	templates *template.Template
-	gen       *generator.Generator
-	pitchers  map[string]pitcher.Pitcher // "redis", "omni-pitcher", "both"
-	sentLog   *SentLog
-	sched     *scheduler.Scheduler
-	interval  string
-	build     BuildInfo
+	templates        *template.Template
+	gen              *generator.Generator
+	pitchers         map[string]pitcher.Pitcher // "redis", "omni-pitcher", "both"
+	sentLog          *SentLog
+	sched            *scheduler.Scheduler
+	interval         string
+	defaultTargetURL string
+	build            BuildInfo
 }
 
 // NewWebHandlers creates the web handler group.
@@ -109,17 +111,19 @@ func NewWebHandlers(
 	pitchers map[string]pitcher.Pitcher,
 	sched *scheduler.Scheduler,
 	interval string,
+	defaultTargetURL string,
 	build BuildInfo,
 ) *WebHandlers {
 	tmpl := template.Must(template.ParseFS(tmplFS, "templates/*.html"))
 	return &WebHandlers{
-		templates: tmpl,
-		gen:       gen,
-		pitchers:  pitchers,
-		sentLog:   NewSentLog(100),
-		sched:     sched,
-		interval:  interval,
-		build:     build,
+		templates:        tmpl,
+		gen:              gen,
+		pitchers:         pitchers,
+		sentLog:          NewSentLog(100),
+		sched:            sched,
+		interval:         interval,
+		defaultTargetURL: defaultTargetURL,
+		build:            build,
 	}
 }
 
@@ -146,6 +150,7 @@ func (h *WebHandlers) IndexHandler(w http.ResponseWriter, r *http.Request) {
 		SchedulerRunning:  stats.Running,
 		SchedulerInterval: h.interval,
 		SchedulerPitched:  stats.Pitched,
+		TargetURL:         h.defaultTargetURL,
 		Version:           h.build.Version,
 		Commit:            h.build.Commit,
 		Date:              h.build.Date,
@@ -201,17 +206,30 @@ func (h *WebHandlers) ComposerSendHandler(w http.ResponseWriter, r *http.Request
 		Timestamp:      time.Now().Format(time.RFC3339),
 	}
 
-	target := r.FormValue("target")
-	if target == "" {
-		target = "redis"
-	}
+	targetURL := r.FormValue("target_url")
 
-	p, ok := h.pitchers[target]
-	if !ok {
-		// Fall back to first available pitcher.
-		for _, v := range h.pitchers {
-			p = v
-			break
+	// Determine which pitcher to use.
+	var p pitcher.Pitcher
+	if targetURL != "" {
+		// User specified a URL — create an ad-hoc HTTP pitcher.
+		p = &pitcher.HTTPPitcher{
+			Endpoint:   targetURL,
+			APIPath:    "generic",
+			HTTPClient: pitcher.DefaultHTTPClient(),
+		}
+	} else {
+		// Fall back to pre-configured pitchers map.
+		target := r.FormValue("target")
+		if target == "" {
+			target = "redis"
+		}
+		var ok bool
+		p, ok = h.pitchers[target]
+		if !ok {
+			for _, v := range h.pitchers {
+				p = v
+				break
+			}
 		}
 	}
 
@@ -241,7 +259,11 @@ func (h *WebHandlers) ComposerSendHandler(w http.ResponseWriter, r *http.Request
 		Status:   "sent",
 	})
 
-	slog.Info("message pitched from composer", "title", msg.Title, "severity", msg.Severity, "target", target)
+	logTarget := targetURL
+	if logTarget == "" {
+		logTarget = "configured-backend"
+	}
+	slog.Info("message pitched from composer", "title", msg.Title, "severity", msg.Severity, "target", logTarget)
 	w.Header().Set("HX-Trigger", "sentMessage")
 	h.renderToast(w, "success", "Message pitched successfully")
 }

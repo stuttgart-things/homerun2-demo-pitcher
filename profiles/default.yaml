@@ -1,5 +1,6 @@
 name: default
 description: Generic monitoring and ops message profile
+# target_url: https://pitcher.your-cluster.example.com
 
 severities:
   error: 10

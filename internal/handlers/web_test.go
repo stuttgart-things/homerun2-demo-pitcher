@@ -40,6 +40,7 @@ func newTestWebHandlers(mp *mockPitcher) *WebHandlers {
 		pitchers,
 		nil, // no scheduler in tests
 		"10s",
+		"http://localhost:4000",
 		build,
 	)
 }

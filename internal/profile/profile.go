@@ -14,6 +14,7 @@ import (
 type Profile struct {
 	Name        string                      `yaml:"name"`
 	Description string                      `yaml:"description"`
+	TargetURL   string                      `yaml:"target_url"`
 	Severities  map[string]int              `yaml:"severities"`
 	Systems     []string                    `yaml:"systems"`
 	Authors     []string                    `yaml:"authors"`
