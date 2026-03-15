@@ -96,11 +96,12 @@ tasks:
   run-local:
     desc: Run pitcher locally with file backend (no Redis needed)
     vars:
-      PORT: '{{ "{{" }} .PORT | default "8080" {{ "}}" }}'
+      PORT: '{{ .PORT | default "8080" }}'
     env:
-      PITCHER_MODE: file
+      DEMO_MODE: web
+      PITCH_TARGET: file
       AUTH_TOKEN: local-dev-token
-      PORT: "{{ "{{" }} .PORT {{ "}}" }}"
+      PORT: "{{ .PORT }}"
       LOG_FORMAT: text
     cmds:
       - go run .
