@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   lint:
-    uses: stuttgart-things/github-workflow-templates/.github/workflows/call-lint-repo.yaml@main
+    uses: stuttgart-things/github-workflow-templates/.github/workflows/call-repository-linting.yaml@main
     with:
       runs-on: ubuntu-latest
     secrets: inherit # pragma: allowlist secret
