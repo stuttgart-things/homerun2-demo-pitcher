@@ -19,6 +19,7 @@ _httpRouteParentRefName = option("config.httpRouteParentRefName")
 _httpRouteParentRefNamespace = option("config.httpRouteParentRefNamespace")
 _httpRouteHostname = option("config.httpRouteHostname")
 _httpRouteAnnotations = option("config.httpRouteAnnotations") or {}
+_trustBundleConfigMap = option("config.trustBundleConfigMap")
 _extraEnvVars = option("config.extraEnvVars") or {}
 
 # Config instance with command-line overrides
@@ -51,6 +52,8 @@ config: schema.DemoPitcher = schema.DemoPitcher {
         httpRouteHostname = _httpRouteHostname
     if _httpRouteAnnotations:
         httpRouteAnnotations = _httpRouteAnnotations
+    if _trustBundleConfigMap:
+        trustBundleConfigMap = _trustBundleConfigMap
     if _extraEnvVars:
         extraEnvVars = _extraEnvVars
 }
