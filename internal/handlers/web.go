@@ -212,9 +212,13 @@ func (h *WebHandlers) ComposerSendHandler(w http.ResponseWriter, r *http.Request
 	var p pitcher.Pitcher
 	if targetURL != "" {
 		// User specified a URL — create an ad-hoc HTTP pitcher.
+		apiPath := r.FormValue("api_path")
+		if apiPath == "" {
+			apiPath = homerun.GetEnv("OMNI_PITCHER_API_PATH", "generic")
+		}
 		p = &pitcher.HTTPPitcher{
 			Endpoint:   targetURL,
-			APIPath:    "generic",
+			APIPath:    apiPath,
 			HTTPClient: pitcher.DefaultHTTPClient(),
 		}
 	} else {
