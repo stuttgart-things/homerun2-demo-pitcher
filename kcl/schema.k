@@ -43,6 +43,9 @@ schema DemoPitcher:
     httpRouteHostname: str = ""
     httpRouteAnnotations: {str:str} = {}
 
+    # TLS trust bundle (ConfigMap name containing trust-bundle.pem)
+    trustBundleConfigMap: str = ""
+
     # Extra environment variables
     extraEnvVars: {str:str} = {}
 
