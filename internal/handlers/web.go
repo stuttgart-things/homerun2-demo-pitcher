@@ -219,6 +219,7 @@ func (h *WebHandlers) ComposerSendHandler(w http.ResponseWriter, r *http.Request
 		p = &pitcher.HTTPPitcher{
 			Endpoint:   targetURL,
 			APIPath:    apiPath,
+			AuthToken:  homerun.GetEnv("AUTH_TOKEN", ""),
 			HTTPClient: pitcher.DefaultHTTPClient(),
 		}
 	} else {
