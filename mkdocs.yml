@@ -4,6 +4,7 @@ nav:
   - Home: index.md
   - API Usage: api-usage.md
   - Deployment: deployment.md
+  - Preview Environments: preview-environments.md
   - CI/CD: cicd.md
 plugins:
   - techdocs-core
