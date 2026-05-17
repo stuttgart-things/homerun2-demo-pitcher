@@ -72,7 +72,7 @@ func TestAIGeneratorWithMockServer(t *testing.T) {
 		})
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(resp)
+		_, _ = w.Write(resp)
 	}))
 	defer server.Close()
 
@@ -140,7 +140,7 @@ func TestAIGeneratorError(t *testing.T) {
 			"response": "this is not valid json",
 		})
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(resp)
+		_, _ = w.Write(resp)
 	}))
 	defer server2.Close()
 
