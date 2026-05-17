@@ -47,7 +47,7 @@ func TestHTTPPitcher(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(httpResponse{
+		_ = json.NewEncoder(w).Encode(httpResponse{
 			ObjectID: "obj-123",
 			StreamID: "stream-456",
 			Status:   "success",
@@ -86,12 +86,12 @@ func TestHTTPPitcherRetry(t *testing.T) {
 		n := attempts.Add(1)
 		if n <= 2 {
 			w.WriteHeader(http.StatusServiceUnavailable)
-			w.Write([]byte("unavailable"))
+			_, _ = w.Write([]byte("unavailable"))
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(httpResponse{
+		_ = json.NewEncoder(w).Encode(httpResponse{
 			ObjectID: "retry-obj",
 			StreamID: "retry-stream",
 			Status:   "success",
@@ -135,7 +135,7 @@ func TestHTTPPitcherHealthCheck(t *testing.T) {
 				t.Errorf("expected GET, got %s", r.Method)
 			}
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"status":"ok"}`))
+			_, _ = w.Write([]byte(`{"status":"ok"}`))
 		}))
 		defer srv.Close()
 

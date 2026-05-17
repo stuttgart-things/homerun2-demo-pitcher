@@ -234,7 +234,7 @@ func registerWebRoutes(
 	enabled := homerun.GetEnv("PITCH_ENABLED", "false") == "true"
 
 	// If profile has a target_url, use an HTTP pitcher for the scheduler.
-	var schedPitcher pitcher.Pitcher = primaryPitcher
+	schedPitcher := primaryPitcher
 	if prof.TargetURL != "" {
 		schedPitcher = &pitcher.HTTPPitcher{
 			Endpoint:   prof.TargetURL,

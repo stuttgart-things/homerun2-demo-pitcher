@@ -38,12 +38,12 @@ templates:
 	if err != nil {
 		t.Fatalf("failed to create temp file: %v", err)
 	}
-	defer os.Remove(tmpFile.Name())
+	defer func() { _ = os.Remove(tmpFile.Name()) }()
 
 	if _, err := tmpFile.Write(content); err != nil {
 		t.Fatalf("failed to write temp file: %v", err)
 	}
-	tmpFile.Close()
+	_ = tmpFile.Close()
 
 	p, err := LoadFromFile(tmpFile.Name())
 	if err != nil {
@@ -88,7 +88,7 @@ func TestLoadFromDir(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(dir)
+	defer func() { _ = os.RemoveAll(dir) }()
 
 	profile1 := []byte(`
 name: alpha
@@ -112,10 +112,16 @@ authors:
   - auth-2
 `)
 
-	os.WriteFile(filepath.Join(dir, "alpha.yaml"), profile1, 0644)
-	os.WriteFile(filepath.Join(dir, "beta.yml"), profile2, 0644)
+	if err := os.WriteFile(filepath.Join(dir, "alpha.yaml"), profile1, 0644); err != nil {
+		t.Fatalf("failed to write alpha.yaml: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "beta.yml"), profile2, 0644); err != nil {
+		t.Fatalf("failed to write beta.yml: %v", err)
+	}
 	// non-yaml file should be ignored
-	os.WriteFile(filepath.Join(dir, "readme.txt"), []byte("ignore me"), 0644)
+	if err := os.WriteFile(filepath.Join(dir, "readme.txt"), []byte("ignore me"), 0644); err != nil {
+		t.Fatalf("failed to write readme.txt: %v", err)
+	}
 
 	profiles, err := LoadFromDir(dir)
 	if err != nil {
