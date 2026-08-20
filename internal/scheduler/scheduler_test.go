@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	homerun "github.com/stuttgart-things/homerun-library/v3"
+	homerun "github.com/stuttgart-things/homerun-library/v4"
 )
 
 // mockGenerator implements MessageGenerator for testing.

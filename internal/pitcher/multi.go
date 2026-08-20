@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"strings"
 
-	homerun "github.com/stuttgart-things/homerun-library/v3"
+	homerun "github.com/stuttgart-things/homerun-library/v4"
 )
 
 // MultiPitcher sends messages to multiple pitcher backends.

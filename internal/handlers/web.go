@@ -12,7 +12,7 @@ import (
 	"github.com/stuttgart-things/homerun2-demo-pitcher/internal/pitcher"
 	"github.com/stuttgart-things/homerun2-demo-pitcher/internal/scheduler"
 
-	homerun "github.com/stuttgart-things/homerun-library/v3"
+	homerun "github.com/stuttgart-things/homerun-library/v4"
 )
 
 // SentEntry records a sent message for the log.
@@ -202,7 +202,7 @@ func (h *WebHandlers) ComposerSendHandler(w http.ResponseWriter, r *http.Request
 		AssigneeName:   r.FormValue("assignee_name"),
 		AssigneeAddress: r.FormValue("assignee_address"),
 		Artifacts:      r.FormValue("artifacts"),
-		Url:            r.FormValue("url"),
+		URL:            r.FormValue("url"),
 		Timestamp:      time.Now().Format(time.RFC3339),
 	}
 
@@ -301,6 +301,6 @@ func messageToFields(msg homerun.Message) FieldsData {
 		AssigneeName:   msg.AssigneeName,
 		AssigneeAddress: msg.AssigneeAddress,
 		Artifacts:      msg.Artifacts,
-		Url:            msg.Url,
+		Url:            msg.URL,
 	}
 }
