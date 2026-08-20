@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"time"
 
-	homerun "github.com/stuttgart-things/homerun-library/v3"
+	homerun "github.com/stuttgart-things/homerun-library/v4"
 )
 
 // HTTPPitcher forwards messages to a remote pitcher via HTTP POST.

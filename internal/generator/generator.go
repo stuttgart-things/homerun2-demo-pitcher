@@ -7,7 +7,7 @@ import (
 	"text/template"
 	"time"
 
-	homerun "github.com/stuttgart-things/homerun-library/v3"
+	homerun "github.com/stuttgart-things/homerun-library/v4"
 )
 
 // MessageProfile provides the data needed for message generation.
@@ -107,7 +107,7 @@ func (g *Generator) GenerateWithSeverity(severity string) homerun.Message {
 	}
 
 	if len(g.profile.URLs) > 0 {
-		msg.Url = g.profile.URLs[rand.IntN(len(g.profile.URLs))]
+		msg.URL = g.profile.URLs[rand.IntN(len(g.profile.URLs))]
 	}
 
 	if len(g.profile.Artifacts) > 0 {

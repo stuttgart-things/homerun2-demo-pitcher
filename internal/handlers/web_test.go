@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	homerun "github.com/stuttgart-things/homerun-library/v3"
+	homerun "github.com/stuttgart-things/homerun-library/v4"
 
 	"github.com/stuttgart-things/homerun2-demo-pitcher/internal/generator"
 	"github.com/stuttgart-things/homerun2-demo-pitcher/internal/pitcher"

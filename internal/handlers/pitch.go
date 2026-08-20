@@ -10,7 +10,7 @@ import (
 	"github.com/stuttgart-things/homerun2-demo-pitcher/internal/models"
 	"github.com/stuttgart-things/homerun2-demo-pitcher/internal/pitcher"
 
-	homerun "github.com/stuttgart-things/homerun-library/v3"
+	homerun "github.com/stuttgart-things/homerun-library/v4"
 )
 
 // NewPitchHandler creates a pitch handler with the given Pitcher backend.

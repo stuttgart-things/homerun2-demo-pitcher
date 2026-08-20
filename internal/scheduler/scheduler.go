@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	homerun "github.com/stuttgart-things/homerun-library/v3"
+	homerun "github.com/stuttgart-things/homerun-library/v4"
 )
 
 // MessageGenerator is the interface for generating messages.

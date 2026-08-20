@@ -37,7 +37,7 @@ func TestGenerate(t *testing.T) {
 	if msg.AssigneeAddress == "" {
 		t.Error("expected AssigneeAddress to be populated")
 	}
-	if msg.Url == "" {
+	if msg.URL == "" {
 		t.Error("expected Url to be populated")
 	}
 	if msg.Artifacts == "" {
@@ -171,8 +171,8 @@ func TestEmptyPools(t *testing.T) {
 	if msg.AssigneeName != "" {
 		t.Errorf("expected empty AssigneeName, got %q", msg.AssigneeName)
 	}
-	if msg.Url != "" {
-		t.Errorf("expected empty Url, got %q", msg.Url)
+	if msg.URL != "" {
+		t.Errorf("expected empty URL, got %q", msg.URL)
 	}
 	if msg.Artifacts != "" {
 		t.Errorf("expected empty Artifacts, got %q", msg.Artifacts)
