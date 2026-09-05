@@ -53,15 +53,50 @@ docker run \
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `DEMO_MODE` | `api` (auth on `/pitch`), `web` (UI, `/pitch` unauthenticated), `full` (UI + auth) | `api` |
+| `PITCH_TARGET` | Backend: `redis`, `omni-pitcher`, `both` or `file` | `redis` |
+| `OMNI_PITCHER_URL` | omni-pitcher endpoint, used by `omni-pitcher` and `both` | `http://localhost:4000` |
+| `OMNI_PITCHER_API_PATH` | Path appended to that endpoint | `generic` |
+| `PITCHER_FILE` | Output file, used by `file` | `pitched.log` |
 | `REDIS_ADDR` | Redis server address | `localhost` |
 | `REDIS_PORT` | Redis server port | `6379` |
 | `REDIS_PASSWORD` | Redis password | (empty) |
 | `REDIS_STREAM` | Redis stream name | `homerun` |
 | `PORT` | HTTP server port | `8080` |
-| `AUTH_TOKEN` | Bearer token for auth | (required) |
-| `PITCHER_MODE` | Backend: `redis` or `file` | `redis` |
+| `AUTH_TOKEN` | Bearer token. Required on `/pitch` in `api` and `full` mode; also sent as `Authorization: Bearer` when pitching to omni-pitcher | (empty) |
 | `LOG_FORMAT` | `json` or `text` | `json` |
 | `LOG_LEVEL` | `debug`, `info`, `warn`, `error` | `info` |
+
+`PITCH_TARGET` is matched exactly. A value that is none of the four — `http`,
+say — is **not** an error: it falls through to the `redis` default, the process
+logs `pitcher backend: redis` and every pitch goes to `REDIS_STREAM` instead of
+where you meant. Check the startup line before believing a chained setup works.
+
+<details>
+<summary><b>Scheduler (optional, off by default)</b></summary>
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PITCH_ENABLED` | `true` starts the periodic pitcher | `false` |
+| `PITCH_INTERVAL` | Go duration between bursts | `10s` |
+| `PITCH_BURST_SIZE` | Messages per burst | `1` |
+| `PITCH_PROFILE` | Profile name to send | `default` |
+| `PITCH_PROFILE_DIR` | Directory the profiles are read from | `profiles` |
+
+</details>
+
+<details>
+<summary><b>AI message generation (optional, off by default)</b></summary>
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `AI_ENABLED` | `true` generates message text via an LLM | `false` |
+| `AI_PROVIDER` | Provider name | `ollama` |
+| `AI_ENDPOINT` | Provider endpoint | `http://localhost:11434` |
+| `AI_MODEL` | Model name | `llama3` |
+| `AI_API_KEY` | API key, where the provider needs one | (empty) |
+
+</details>
 
 </details>
 
