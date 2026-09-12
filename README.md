@@ -68,10 +68,11 @@ docker run \
 | `LOG_FORMAT` | `json` or `text` | `json` |
 | `LOG_LEVEL` | `debug`, `info`, `warn`, `error` | `info` |
 
-`PITCH_TARGET` is matched exactly. A value that is none of the four — `http`,
-say — is **not** an error: it falls through to the `redis` default, the process
-logs `pitcher backend: redis` and every pitch goes to `REDIS_STREAM` instead of
-where you meant. Check the startup line before believing a chained setup works.
+`PITCH_TARGET` and `DEMO_MODE` are matched exactly. A value outside the lists
+above (`http`, `Redis`, `ui`, …) **fails startup** with exit 1 and names the
+variable and its valid values. Until #50 it silently fell back to `redis` /
+`api`, so `PITCH_TARGET=http` pitched every message to `REDIS_STREAM` while the
+UI answered 200.
 
 <details>
 <summary><b>Scheduler (optional, off by default)</b></summary>

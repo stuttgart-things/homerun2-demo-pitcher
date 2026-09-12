@@ -1,6 +1,7 @@
 package config
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -60,5 +61,56 @@ func TestSetupLogging(t *testing.T) {
 				SetupLogging()
 			})
 		}
+	}
+}
+
+func TestParseEnum(t *testing.T) {
+	cases := []struct {
+		name    string
+		value   string
+		want    string
+		wantErr bool
+	}{
+		{"unset uses default", "", "redis", false},
+		{"redis", "redis", "redis", false},
+		{"omni-pitcher", "omni-pitcher", "omni-pitcher", false},
+		{"both", "both", "both", false},
+		{"file", "file", "file", false},
+		{"http was never valid", "http", "", true},
+		{"case matters", "Redis", "", true},
+		{"underscore variant", "omni_pitcher", "", true},
+		{"surrounding space", " redis", "", true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := parseEnum("PITCH_TARGET", tc.value, "redis", PitchTargets)
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("parseEnum(%q) error = %v, wantErr %v", tc.value, err, tc.wantErr)
+			}
+			if got != tc.want {
+				t.Errorf("parseEnum(%q) = %q, want %q", tc.value, got, tc.want)
+			}
+		})
+	}
+}
+
+func TestLoadPitchTargetAndDemoMode(t *testing.T) {
+	t.Setenv("PITCH_TARGET", "")
+	t.Setenv("DEMO_MODE", "")
+	if got, err := LoadPitchTarget(); err != nil || got != "redis" {
+		t.Fatalf("LoadPitchTarget() unset = %q, %v; want redis, nil", got, err)
+	}
+	if got, err := LoadDemoMode(); err != nil || got != "api" {
+		t.Fatalf("LoadDemoMode() unset = %q, %v; want api, nil", got, err)
+	}
+
+	t.Setenv("PITCH_TARGET", "http")
+	if _, err := LoadPitchTarget(); err == nil || !strings.Contains(err.Error(), "PITCH_TARGET") || !strings.Contains(err.Error(), "omni-pitcher") {
+		t.Fatalf("LoadPitchTarget() http: error %v should name the variable and list the valid values", err)
+	}
+
+	t.Setenv("DEMO_MODE", "ui")
+	if _, err := LoadDemoMode(); err == nil || !strings.Contains(err.Error(), "DEMO_MODE") || !strings.Contains(err.Error(), "full") {
+		t.Fatalf("LoadDemoMode() ui: error %v should name the variable and list the valid values", err)
 	}
 }

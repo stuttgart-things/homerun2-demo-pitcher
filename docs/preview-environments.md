@@ -121,7 +121,7 @@ spec:
               version: 'pr-{{ .number }}-{{ .head_sha }}'
               hostname: 'demo-pr-{{ .number }}.homerun2-dev.sthings-vsphere.labul.sva.de'
               inlineHttpRoute: true
-              # Chart injects PITCH_TARGET=http + OMNI_PITCHER_URL=<this> +
+              # Chart injects PITCH_TARGET=omni-pitcher + OMNI_PITCHER_URL=<this> +
               # OMNI_PITCHER_API_PATH=pitch + AUTH_TOKEN (secretKeyRef) into
               # the Deployment env when set. See "The env-injection chain" below.
               omniPitcherUrl: 'http://homerun2-omni-pitcher.homerun2-demo-pitcher-pr-{{ .number }}.svc.cluster.local'
@@ -157,12 +157,12 @@ The chart's `apps/homerun2/install/templates/demo-pitcher.yaml` template, when `
 
 | Env var | Value | Why |
 |--|--|--|
-| `PITCH_TARGET` | `http` | Switches demo-pitcher's `/pitch` handler from its baked-in `RedisPitcher` default to `HTTPPitcher` |
+| `PITCH_TARGET` | `omni-pitcher` | Switches demo-pitcher's `/pitch` handler from its baked-in `RedisPitcher` default to `HTTPPitcher`. The chart injected `http` until stuttgart-things/argocd#360; that was never a valid value and silently pitched to Redis, and since #50 it fails startup |
 | `OMNI_PITCHER_URL` | `http://homerun2-omni-pitcher.<ns>.svc.cluster.local` | In-cluster Service URL of the co-tenanted omni-pitcher |
 | `OMNI_PITCHER_API_PATH` | `pitch` | Without this override, demo-pitcher's default `generic` produces `/generic` which 404s on omni-pitcher (whose generic route is `/pitch`) |
 | `AUTH_TOKEN` | `secretKeyRef → homerun2-demo-pitcher-token / auth-token` | Sent as `Authorization: Bearer …`. Same Vault property (`preview-env.authToken`) populates both demo-pitcher's and omni-pitcher's `-token` Secrets via ESO, so the bearer-token compare in omni-pitcher's `authMiddleware` matches. |
 
-The patches use the existing `homerun2.redisAddrPatch` helper's `extraEnv` plumbing; strategic-merge merges container env by `name`, so `PITCH_TARGET=http` overrides the KCL-baked default `redis`.
+The patches use the existing `homerun2.redisAddrPatch` helper's `extraEnv` plumbing; strategic-merge merges container env by `name`, so `PITCH_TARGET=omni-pitcher` overrides the KCL-baked default `redis`.
 
 ## The policy generators
 

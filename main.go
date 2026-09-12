@@ -47,7 +47,20 @@ func main() {
 	)
 
 	port := homerun.GetEnv("PORT", "8080")
-	demoMode := homerun.GetEnv("DEMO_MODE", "api")
+
+	// Both are validated before anything else starts: an unknown value used to
+	// fall into a switch default and run the wrong backend or HTTP surface while
+	// every request answered 200 (#50).
+	demoMode, err := config.LoadDemoMode()
+	if err != nil {
+		slog.Error("invalid configuration", "error", err)
+		os.Exit(1)
+	}
+	pitcherTarget, err := config.LoadPitchTarget()
+	if err != nil {
+		slog.Error("invalid configuration", "error", err)
+		os.Exit(1)
+	}
 
 	buildInfo := handlers.BuildInfo{Version: version, Commit: commit, Date: date}
 	mux := http.NewServeMux()
@@ -59,7 +72,6 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 
 	// Build pitchers based on PITCH_TARGET.
-	pitcherTarget := homerun.GetEnv("PITCH_TARGET", "redis")
 	allPitchers := buildPitchers(ctx, pitcherTarget)
 
 	// Pick the primary pitcher (for API and scheduler).
@@ -80,7 +92,7 @@ func main() {
 			mux.HandleFunc("/pitch", middleware.TokenAuthMiddleware(handlers.NewPitchHandler(primaryPitcher)))
 		}
 
-	default: // "api"
+	default: // "api", the only value left after config.LoadDemoMode
 		if primaryPitcher != nil {
 			mux.HandleFunc("/pitch", middleware.TokenAuthMiddleware(handlers.NewPitchHandler(primaryPitcher)))
 		}
@@ -145,7 +157,7 @@ func buildPitchers(ctx context.Context, target string) map[string]pitcher.Pitche
 		// Multi-pitcher combining both
 		pitchers["both"] = &pitcher.MultiPitcher{Pitchers: []pitcher.Pitcher{rp, hp}}
 
-	default: // redis
+	default: // "redis", the only value left after config.LoadPitchTarget
 		redisConfig := config.LoadRedisConfig()
 		waitForRedis(ctx, redisConfig)
 		rp := &pitcher.RedisPitcher{Config: redisConfig}
