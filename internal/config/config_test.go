@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
@@ -112,5 +113,114 @@ func TestLoadPitchTargetAndDemoMode(t *testing.T) {
 	t.Setenv("DEMO_MODE", "ui")
 	if _, err := LoadDemoMode(); err == nil || !strings.Contains(err.Error(), "DEMO_MODE") || !strings.Contains(err.Error(), "full") {
 		t.Fatalf("LoadDemoMode() ui: error %v should name the variable and list the valid values", err)
+	}
+}
+
+func TestParsePitchTarget(t *testing.T) {
+	t.Run("unset defaults to redis", func(t *testing.T) {
+		// t.Setenv sandboxes; then unset so LookupEnv reports missing.
+		t.Setenv("PITCH_TARGET", "x")
+		os.Unsetenv("PITCH_TARGET")
+		got, err := ParsePitchTarget()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if got != "redis" {
+			t.Fatalf("got %q, want redis", got)
+		}
+	})
+
+	t.Run("empty defaults to redis", func(t *testing.T) {
+		t.Setenv("PITCH_TARGET", "")
+		got, err := ParsePitchTarget()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if got != "redis" {
+			t.Fatalf("got %q, want redis", got)
+		}
+	})
+
+	for _, want := range []string{"redis", "omni-pitcher", "both", "file"} {
+		t.Run("valid_"+want, func(t *testing.T) {
+			t.Setenv("PITCH_TARGET", want)
+			got, err := ParsePitchTarget()
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if got != want {
+				t.Fatalf("got %q, want %q", got, want)
+			}
+		})
+	}
+
+	for _, bad := range []string{"http", "Redis", "omnipitcher", "file "} {
+		t.Run("invalid_"+bad, func(t *testing.T) {
+			t.Setenv("PITCH_TARGET", bad)
+			_, err := ParsePitchTarget()
+			if err == nil {
+				t.Fatal("expected error")
+			}
+			if !strings.Contains(err.Error(), "PITCH_TARGET") {
+				t.Fatalf("error should name PITCH_TARGET: %v", err)
+			}
+			if !strings.Contains(err.Error(), "omni-pitcher") {
+				t.Fatalf("error should list valid values: %v", err)
+			}
+		})
+	}
+}
+
+func TestParseDemoMode(t *testing.T) {
+	t.Run("unset defaults to api", func(t *testing.T) {
+		t.Setenv("DEMO_MODE", "x")
+		os.Unsetenv("DEMO_MODE")
+		got, err := ParseDemoMode()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if got != "api" {
+			t.Fatalf("got %q, want api", got)
+		}
+	})
+
+	t.Run("empty defaults to api", func(t *testing.T) {
+		t.Setenv("DEMO_MODE", "")
+		got, err := ParseDemoMode()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if got != "api" {
+			t.Fatalf("got %q, want api", got)
+		}
+	})
+
+	for _, want := range []string{"api", "web", "full"} {
+		t.Run("valid_"+want, func(t *testing.T) {
+			t.Setenv("DEMO_MODE", want)
+			got, err := ParseDemoMode()
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if got != want {
+				t.Fatalf("got %q, want %q", got, want)
+			}
+		})
+	}
+
+	for _, bad := range []string{"ui", "API", "graphql"} {
+		t.Run("invalid_"+bad, func(t *testing.T) {
+			t.Setenv("DEMO_MODE", bad)
+			_, err := ParseDemoMode()
+			if err == nil {
+				t.Fatal("expected error")
+			}
+			if !strings.Contains(err.Error(), "DEMO_MODE") {
+				t.Fatalf("error should name DEMO_MODE: %v", err)
+			}
+			if !strings.Contains(err.Error(), "web") {
+				t.Fatalf("error should list valid values: %v", err)
+			}
+		})
 	}
 }

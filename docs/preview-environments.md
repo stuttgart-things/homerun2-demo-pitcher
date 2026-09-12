@@ -124,6 +124,7 @@ spec:
               # Chart injects PITCH_TARGET=omni-pitcher + OMNI_PITCHER_URL=<this> +
               # OMNI_PITCHER_API_PATH=pitch + AUTH_TOKEN (secretKeyRef) into
               # the Deployment env when set. See "The env-injection chain" below.
+              # (Historically injected PITCH_TARGET=http until stuttgart-things/argocd#360.)
               omniPitcherUrl: 'http://homerun2-omni-pitcher.homerun2-demo-pitcher-pr-{{ .number }}.svc.cluster.local'
             omniPitcher:
               enabled: true
@@ -157,7 +158,7 @@ The chart's `apps/homerun2/install/templates/demo-pitcher.yaml` template, when `
 
 | Env var | Value | Why |
 |--|--|--|
-| `PITCH_TARGET` | `omni-pitcher` | Switches demo-pitcher's `/pitch` handler from its baked-in `RedisPitcher` default to `HTTPPitcher`. The chart injected `http` until stuttgart-things/argocd#360; that was never a valid value and silently pitched to Redis, and since #50 it fails startup |
+| `PITCH_TARGET` | `omni-pitcher` | Switches demo-pitcher's `/pitch` handler from its baked-in `RedisPitcher` default to `HTTPPitcher` (was `http` until stuttgart-things/argocd#360; `http` now fails startup — see #50) |
 | `OMNI_PITCHER_URL` | `http://homerun2-omni-pitcher.<ns>.svc.cluster.local` | In-cluster Service URL of the co-tenanted omni-pitcher |
 | `OMNI_PITCHER_API_PATH` | `pitch` | Without this override, demo-pitcher's default `generic` produces `/generic` which 404s on omni-pitcher (whose generic route is `/pitch`) |
 | `AUTH_TOKEN` | `secretKeyRef → homerun2-demo-pitcher-token / auth-token` | Sent as `Authorization: Bearer …`. Same Vault property (`preview-env.authToken`) populates both demo-pitcher's and omni-pitcher's `-token` Secrets via ESO, so the bearer-token compare in omni-pitcher's `authMiddleware` matches. |
