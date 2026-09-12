@@ -55,9 +55,12 @@ func main() {
 	// Always register health endpoint.
 	mux.HandleFunc("/health", handlers.NewHealthHandler(buildInfo))
 
+	// Canceled on SIGINT/SIGTERM: ends the startup wait for Redis, then the server.
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+
 	// Build pitchers based on PITCH_TARGET.
 	pitcherTarget := homerun.GetEnv("PITCH_TARGET", "redis")
-	allPitchers := buildPitchers(pitcherTarget)
+	allPitchers := buildPitchers(ctx, pitcherTarget)
 
 	// Pick the primary pitcher (for API and scheduler).
 	primaryPitcher := pickPrimaryPitcher(allPitchers, pitcherTarget)
@@ -96,14 +99,13 @@ func main() {
 		}
 	}()
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
+	<-ctx.Done()
+	stop()
 
 	slog.Info("shutting down server")
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := srv.Shutdown(shutdownCtx); err != nil {
 		slog.Error("server forced to shutdown", "error", err)
 		os.Exit(1)
 	}
@@ -111,7 +113,7 @@ func main() {
 }
 
 // buildPitchers creates all pitcher backends based on the target config.
-func buildPitchers(target string) map[string]pitcher.Pitcher {
+func buildPitchers(ctx context.Context, target string) map[string]pitcher.Pitcher {
 	pitchers := make(map[string]pitcher.Pitcher)
 
 	switch target {
@@ -126,17 +128,14 @@ func buildPitchers(target string) map[string]pitcher.Pitcher {
 		slog.Info("pitcher backend: omni-pitcher", "endpoint", hp.Endpoint)
 
 	case "both":
-		// Redis
+		// Redis. Waited for like the redis target: a failed first check used to
+		// drop the Redis backend for the lifetime of the pod, which then pitched
+		// to omni-pitcher only while reporting "both" (#47).
 		redisConfig := config.LoadRedisConfig()
+		waitForRedis(ctx, redisConfig)
 		rp := &pitcher.RedisPitcher{Config: redisConfig}
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		if err := rp.HealthCheck(ctx); err != nil {
-			slog.Warn("redis health check failed for multi-pitcher, redis backend disabled", "error", err)
-		} else {
-			pitchers["redis"] = rp
-			slog.Info("pitcher backend: redis", "addr", redisConfig.Addr, "port", redisConfig.Port)
-		}
-		cancel()
+		pitchers["redis"] = rp
+		slog.Info("pitcher backend: redis", "addr", redisConfig.Addr, "port", redisConfig.Port)
 
 		// HTTP / omni-pitcher
 		hp := newHTTPPitcher()
@@ -144,28 +143,37 @@ func buildPitchers(target string) map[string]pitcher.Pitcher {
 		slog.Info("pitcher backend: omni-pitcher", "endpoint", hp.Endpoint)
 
 		// Multi-pitcher combining both
-		var backends []pitcher.Pitcher
-		if rp, ok := pitchers["redis"]; ok {
-			backends = append(backends, rp)
-		}
-		backends = append(backends, hp)
-		pitchers["both"] = &pitcher.MultiPitcher{Pitchers: backends}
+		pitchers["both"] = &pitcher.MultiPitcher{Pitchers: []pitcher.Pitcher{rp, hp}}
 
 	default: // redis
 		redisConfig := config.LoadRedisConfig()
+		waitForRedis(ctx, redisConfig)
 		rp := &pitcher.RedisPitcher{Config: redisConfig}
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		if err := rp.HealthCheck(ctx); err != nil {
-			slog.Error("redis health check failed", "error", err)
-			cancel()
-			os.Exit(1)
-		}
-		cancel()
 		pitchers["redis"] = rp
 		slog.Info("pitcher backend: redis", "addr", redisConfig.Addr, "port", redisConfig.Port)
 	}
 
 	return pitchers
+}
+
+// waitForRedis blocks until Redis answers, for REDIS_STARTUP_TIMEOUT (default
+// 120s), instead of the single 5s check that ended the process whenever Redis
+// was still starting (#47). A shutdown signal during the wait exits 0; a timeout
+// or an invalid REDIS_STARTUP_TIMEOUT exits 1.
+func waitForRedis(ctx context.Context, rc homerun.RedisConfig) {
+	timeout, err := homerun.LoadRedisStartupTimeout()
+	if err != nil {
+		slog.Error("invalid configuration", "error", err)
+		os.Exit(1)
+	}
+	if err := homerun.WaitForRedisContext(ctx, rc, timeout); err != nil {
+		if ctx.Err() != nil {
+			slog.Info("shutdown requested while waiting for redis")
+			os.Exit(0)
+		}
+		slog.Error("redis not reachable", "error", err, "addr", rc.Addr, "port", rc.Port, "startup_timeout", timeout.String())
+		os.Exit(1)
+	}
 }
 
 func newHTTPPitcher() *pitcher.HTTPPitcher {

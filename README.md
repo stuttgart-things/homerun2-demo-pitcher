@@ -62,6 +62,7 @@ docker run \
 | `REDIS_PORT` | Redis server port | `6379` |
 | `REDIS_PASSWORD` | Redis password | (empty) |
 | `REDIS_STREAM` | Redis stream name | `homerun` |
+| `REDIS_STARTUP_TIMEOUT` | How long startup waits for Redis (`redis` and `both`) before exiting, as a Go duration; SIGINT/SIGTERM ends the wait with exit 0 | `120s` |
 | `PORT` | HTTP server port | `8080` |
 | `AUTH_TOKEN` | Bearer token. Required on `/pitch` in `api` and `full` mode; also sent as `Authorization: Bearer` when pitching to omni-pitcher | (empty) |
 | `LOG_FORMAT` | `json` or `text` | `json` |
