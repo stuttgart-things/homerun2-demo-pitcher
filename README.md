@@ -68,11 +68,11 @@ docker run \
 | `LOG_FORMAT` | `json` or `text` | `json` |
 | `LOG_LEVEL` | `debug`, `info`, `warn`, `error` | `info` |
 
-`PITCH_TARGET` and `DEMO_MODE` are matched exactly. A value outside the lists
-above (`http`, `Redis`, `ui`, …) **fails startup** with exit 1 and names the
-variable and its valid values. Until #50 it silently fell back to `redis` /
-`api`, so `PITCH_TARGET=http` pitched every message to `REDIS_STREAM` while the
-UI answered 200.
+`PITCH_TARGET` and `DEMO_MODE` are matched exactly. Unset (or empty) keeps the
+documented default. A value outside the lists above (`http`, `Redis`, `ui`, …)
+**fails startup** with exit 1 and names the variable and its valid values. Until
+#50 it silently fell back to `redis` / `api`, so `PITCH_TARGET=http` pitched
+every message to `REDIS_STREAM` while the UI answered 200.
 
 <details>
 <summary><b>Scheduler (optional, off by default)</b></summary>

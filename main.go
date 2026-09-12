@@ -71,7 +71,7 @@ func main() {
 	// Canceled on SIGINT/SIGTERM: ends the startup wait for Redis, then the server.
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 
-	// Build pitchers based on PITCH_TARGET.
+	// Build pitchers based on validated PITCH_TARGET.
 	allPitchers := buildPitchers(ctx, pitcherTarget)
 
 	// Pick the primary pitcher (for API and scheduler).

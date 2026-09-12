@@ -86,3 +86,9 @@ func SetupLogging() {
 	// interleave into the log stream.
 	homerun.SetLogger(slog.Default())
 }
+
+// ParsePitchTarget is the #50 helper kept as an alias of LoadPitchTarget.
+func ParsePitchTarget() (string, error) { return LoadPitchTarget() }
+
+// ParseDemoMode is the #50 helper kept as an alias of LoadDemoMode.
+func ParseDemoMode() (string, error) { return LoadDemoMode() }
