@@ -14,6 +14,7 @@ _redisPassword = option("config.redisPassword")
 _demoMode = option("config.demoMode")
 _pitchTarget = option("config.pitchTarget")
 _authToken = option("config.authToken")
+_basePath = option("config.basePath")
 _httpRouteEnabled = option("config.httpRouteEnabled")
 _httpRouteParentRefName = option("config.httpRouteParentRefName")
 _httpRouteParentRefNamespace = option("config.httpRouteParentRefNamespace")
@@ -42,6 +43,8 @@ config: schema.DemoPitcher = schema.DemoPitcher {
         pitchTarget = _pitchTarget
     if _authToken:
         authToken = _authToken
+    if _basePath:
+        basePath = _basePath
     if _httpRouteEnabled:
         httpRouteEnabled = _httpRouteEnabled in [True, "True", "true"]
     if _httpRouteParentRefName:

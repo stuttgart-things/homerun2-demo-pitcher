@@ -102,6 +102,9 @@ type WebHandlers struct {
 	interval         string
 	defaultTargetURL string
 	build            BuildInfo
+	// basePath is the prefix the UI is served under (BASE_PATH); the
+	// templates put it in front of every URL as {{base}}.
+	basePath string
 }
 
 // NewWebHandlers creates the web handler group.
@@ -114,9 +117,7 @@ func NewWebHandlers(
 	defaultTargetURL string,
 	build BuildInfo,
 ) *WebHandlers {
-	tmpl := template.Must(template.ParseFS(tmplFS, "templates/*.html"))
-	return &WebHandlers{
-		templates:        tmpl,
+	h := &WebHandlers{
 		gen:              gen,
 		pitchers:         pitchers,
 		sentLog:          NewSentLog(100),
@@ -125,6 +126,16 @@ func NewWebHandlers(
 		defaultTargetURL: defaultTargetURL,
 		build:            build,
 	}
+	funcs := template.FuncMap{"base": func() string { return h.basePath }}
+	h.templates = template.Must(template.New("").Funcs(funcs).ParseFS(tmplFS, "templates/*.html"))
+	return h
+}
+
+// SetBasePath sets the URL prefix the UI is served under (BASE_PATH), e.g.
+// "/pitch" behind homerun2-portal. It must be normalised already
+// (config.ParseBasePath).
+func (h *WebHandlers) SetBasePath(p string) {
+	h.basePath = p
 }
 
 // IndexHandler serves the main page.

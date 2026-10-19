@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HOMERUN² — Demo Pitcher</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-    <script src="/static/htmx.min.js"></script>
+    <script src="{{base}}/static/htmx.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         :root { --pico-font-size: 14px; }
@@ -76,7 +76,7 @@
                     <div style="flex:1;">
                         <label for="severity">Severity</label>
                         <select name="severity" id="severity"
-                                hx-get="/composer/fields"
+                                hx-get="{{base}}/composer/fields"
                                 hx-trigger="change"
                                 hx-target="#composer-fields"
                                 hx-swap="innerHTML"
@@ -103,12 +103,12 @@
 
                 <div class="btn-row">
                     <button type="button" class="btn-send"
-                            hx-post="/composer/send"
+                            hx-post="{{base}}/composer/send"
                             hx-include="#composer-form"
                             hx-target="#toast-area"
                             hx-swap="innerHTML">Send</button>
                     <button type="button" class="btn-randomize"
-                            hx-get="/composer/fields"
+                            hx-get="{{base}}/composer/fields"
                             hx-include="[name='severity']"
                             hx-target="#composer-fields"
                             hx-swap="innerHTML">Randomize</button>
@@ -120,7 +120,7 @@
         <div class="log-panel">
             <h3>Sent Messages</h3>
             <div id="sent-log"
-                 hx-get="/log"
+                 hx-get="{{base}}/log"
                  hx-trigger="load, sentMessage from:body"
                  hx-swap="innerHTML">
                 {{template "log.html" .SentLog}}

@@ -64,6 +64,7 @@ docker run \
 | `REDIS_STREAM` | Redis stream name | `homerun` |
 | `REDIS_STARTUP_TIMEOUT` | How long startup waits for Redis (`redis` and `both`) before exiting, as a Go duration; SIGINT/SIGTERM ends the wait with exit 0 | `120s` |
 | `PORT` | HTTP server port | `8080` |
+| `BASE_PATH` | URL prefix behind a reverse proxy, e.g. `/pitch` behind homerun2-portal. The whole HTTP surface moves under it (`/pitch` becomes `/pitch/pitch`); `/health` stays at the root | *(empty)* |
 | `AUTH_TOKEN` | Bearer token. Required on `/pitch` in `api` and `full` mode; also sent as `Authorization: Bearer` when pitching to omni-pitcher | (empty) |
 | `LOG_FORMAT` | `json` or `text` | `json` |
 | `LOG_LEVEL` | `debug`, `info`, `warn`, `error` | `info` |

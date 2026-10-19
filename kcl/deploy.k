@@ -64,6 +64,10 @@ deployment = {
                                 value: str(config.containerPort)
                             }
                             {
+                                name: "BASE_PATH"
+                                value: config.basePath
+                            }
+                            {
                                 name: "REDIS_ADDR"
                                 value: config.redisAddr
                             }

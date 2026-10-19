@@ -36,6 +36,11 @@ schema DemoPitcher:
     servicePort: int = 80
     containerPort: int = 8080
 
+    # URL prefix behind a reverse proxy, e.g. "/pitch" for homerun2-portal
+    # (BASE_PATH). Empty serves at the root. The whole HTTP surface moves under
+    # it, /pitch API included; /health stays at the root for the probes.
+    basePath: str = ""
+
     # HTTPRoute (Gateway API)
     httpRouteEnabled: bool = False
     httpRouteParentRefName: str = ""

@@ -62,11 +62,18 @@ func main() {
 		os.Exit(1)
 	}
 
+	basePath, err := config.LoadBasePath()
+	if err != nil {
+		slog.Error("invalid configuration", "error", err)
+		os.Exit(1)
+	}
+
 	buildInfo := handlers.BuildInfo{Version: version, Commit: commit, Date: date}
 	mux := http.NewServeMux()
 
 	// Always register health endpoint.
-	mux.HandleFunc("/health", handlers.NewHealthHandler(buildInfo))
+	health := handlers.NewHealthHandler(buildInfo)
+	mux.HandleFunc("/health", health)
 
 	// Canceled on SIGINT/SIGTERM: ends the startup wait for Redis, then the server.
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
@@ -79,14 +86,14 @@ func main() {
 
 	switch demoMode {
 	case "web":
-		registerWebRoutes(mux, allPitchers, primaryPitcher, buildInfo)
+		registerWebRoutes(mux, allPitchers, primaryPitcher, buildInfo, basePath)
 		// In web mode, also register /pitch without auth for convenience.
 		if primaryPitcher != nil {
 			mux.HandleFunc("/pitch", handlers.NewPitchHandler(primaryPitcher))
 		}
 
 	case "full":
-		registerWebRoutes(mux, allPitchers, primaryPitcher, buildInfo)
+		registerWebRoutes(mux, allPitchers, primaryPitcher, buildInfo, basePath)
 		// In full mode, /pitch requires auth.
 		if primaryPitcher != nil {
 			mux.HandleFunc("/pitch", middleware.TokenAuthMiddleware(handlers.NewPitchHandler(primaryPitcher)))
@@ -98,13 +105,15 @@ func main() {
 		}
 	}
 
+	// Under BASE_PATH (e.g. /pitch) the whole surface moves, /pitch API
+	// included; /health also stays at the root for probes and the portal.
 	srv := &http.Server{
 		Addr:    ":" + port,
-		Handler: middleware.RequestLogging(mux),
+		Handler: middleware.RequestLogging(handlers.Mount(basePath, mux, health)),
 	}
 
 	go func() {
-		slog.Info("server listening", "port", port, "mode", demoMode)
+		slog.Info("server listening", "port", port, "mode", demoMode, "base_path", basePath)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			slog.Error("server error", "error", err)
 			os.Exit(1)
@@ -213,6 +222,7 @@ func registerWebRoutes(
 	allPitchers map[string]pitcher.Pitcher,
 	primaryPitcher pitcher.Pitcher,
 	buildInfo handlers.BuildInfo,
+	basePath string,
 ) {
 	// Load profile.
 	prof := loadProfile()
@@ -293,6 +303,7 @@ func registerWebRoutes(
 		defaultTargetURL,
 		buildInfo,
 	)
+	webHandlers.SetBasePath(basePath)
 
 	mux.HandleFunc("/", webHandlers.IndexHandler)
 	mux.HandleFunc("/composer/fields", webHandlers.ComposerFieldsHandler)
