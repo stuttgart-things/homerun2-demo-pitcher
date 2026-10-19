@@ -114,3 +114,19 @@ func TestLoadPitchTargetAndDemoMode(t *testing.T) {
 		t.Fatalf("LoadDemoMode() ui: error %v should name the variable and list the valid values", err)
 	}
 }
+
+func TestParseBasePath(t *testing.T) {
+	for raw, want := range map[string]string{
+		"": "", "/": "", " ": "", "/pitch": "/pitch", "pitch/": "/pitch", "/homerun2/pitch": "/homerun2/pitch",
+	} {
+		got, err := ParseBasePath(raw)
+		if err != nil || got != want {
+			t.Errorf("ParseBasePath(%q) = %q, %v; want %q", raw, got, err, want)
+		}
+	}
+	for _, raw := range []string{"/pi tch", "/pitch/../x", "/<x>", "/a//b", "/pitch?x=1"} {
+		if _, err := ParseBasePath(raw); err == nil {
+			t.Errorf("ParseBasePath(%q): want an error", raw)
+		}
+	}
+}

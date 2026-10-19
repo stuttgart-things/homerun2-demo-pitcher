@@ -44,7 +44,8 @@ httproute = {
                     {
                         path: {
                             type: "PathPrefix"
-                            value: "/"
+                            # No rewrite: the service answers under BASE_PATH itself.
+                            value: config.basePath if config.basePath else "/"
                         }
                     }
                 ]

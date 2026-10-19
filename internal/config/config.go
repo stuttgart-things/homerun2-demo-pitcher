@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"regexp"
 	"strings"
 
 	homerun "github.com/stuttgart-things/homerun-library/v4"
@@ -35,6 +36,30 @@ func LoadPitchTarget() (string, error) {
 // LoadDemoMode reads DEMO_MODE; unset means "api".
 func LoadDemoMode() (string, error) {
 	return parseEnum("DEMO_MODE", os.Getenv("DEMO_MODE"), "api", DemoModes)
+}
+
+// LoadBasePath returns the URL prefix the service is served under (BASE_PATH),
+// e.g. "/pitch" behind homerun2-portal. Empty serves at the root.
+func LoadBasePath() (string, error) {
+	return ParseBasePath(os.Getenv("BASE_PATH"))
+}
+
+var basePathSegment = regexp.MustCompile(`^[A-Za-z0-9._~-]+$`)
+
+// ParseBasePath normalises a BASE_PATH to "/a/b" form ("" and "/" become "").
+// Only plain path segments are accepted: the value is written into the page's
+// HTML, and "." or ".." would make the prefix ambiguous.
+func ParseBasePath(s string) (string, error) {
+	trimmed := strings.Trim(strings.TrimSpace(s), "/")
+	if trimmed == "" {
+		return "", nil
+	}
+	for _, seg := range strings.Split(trimmed, "/") {
+		if !basePathSegment.MatchString(seg) || seg == "." || seg == ".." {
+			return "", fmt.Errorf("invalid BASE_PATH %q: segment %q", s, seg)
+		}
+	}
+	return "/" + trimmed, nil
 }
 
 // parseEnum returns def for an empty value and an error naming the variable and
