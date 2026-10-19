@@ -309,6 +309,8 @@ func registerWebRoutes(
 	mux.HandleFunc("/composer/fields", webHandlers.ComposerFieldsHandler)
 	mux.HandleFunc("/composer/send", webHandlers.ComposerSendHandler)
 	mux.HandleFunc("/log", webHandlers.SentLogHandler)
+	mux.HandleFunc("/ui/manifest.json", webHandlers.ManifestHandler)
+	mux.HandleFunc("/ui/fragment/pitches", webHandlers.PitchesFragmentHandler)
 
 	// Static files (htmx.min.js).
 	staticSub, err := fs.Sub(staticFS, "static")
