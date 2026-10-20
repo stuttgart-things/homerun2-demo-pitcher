@@ -79,6 +79,9 @@ type IndexData struct {
 	Version           string
 	Commit            string
 	Date              string
+	// PortalTheme links homerun2-portal's design tokens: the request came
+	// through the portal, which sets X-Forwarded-Prefix.
+	PortalTheme bool
 }
 
 // LogData holds entries for the log partial.
@@ -162,6 +165,7 @@ func (h *WebHandlers) IndexHandler(w http.ResponseWriter, r *http.Request) {
 		SchedulerInterval: h.interval,
 		SchedulerPitched:  stats.Pitched,
 		TargetURL:         h.defaultTargetURL,
+		PortalTheme:       r.Header.Get("X-Forwarded-Prefix") != "",
 		Version:           h.build.Version,
 		Commit:            h.build.Commit,
 		Date:              h.build.Date,

@@ -4,46 +4,78 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HOMERUN² — Demo Pitcher</title>
+    <script>
+        // In homerun2-portal's iframe the portal shows the brand and the
+        // service name: hr-embedded switches to the compact header. Set before
+        // the first paint, so the big banner never flashes.
+        if (window.self !== window.top) document.documentElement.classList.add('hr-embedded');
+    </script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <script src="{{base}}/static/htmx.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
+        /* The homerun2 design tokens: a copy of homerun2-portal's
+           static/homerun2-tokens.css for running without the portal. Behind
+           it the page also links the portal's file (after this block), and
+           its :root wins over this zero-specificity copy. */
+        :where(:root) {
+            --hr-bg: #0b1120;
+            --hr-surface: #111827;
+            --hr-card: #1e293b;
+            --hr-border: #334155;
+            --hr-text: #e2e8f0;
+            --hr-muted: #94a3b8;
+            --hr-accent: #6366f1;
+            --hr-accent-2: #a855f7;
+            --hr-accent-3: #f97316;
+            --hr-ok: #22c55e;
+            --hr-info: #38bdf8;
+            --hr-warning: #eab308;
+            --hr-error: #ef4444;
+        }
         :root { --pico-font-size: 14px; }
-        body { background: #0f172a; }
-        .header-bar { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%); color: #f8fafc; padding: 1.8rem 1.5rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #f97316; }
+        body { background: var(--hr-bg); }
+        .header-bar { background: linear-gradient(135deg, var(--hr-accent) 0%, var(--hr-accent-2) 100%); color: #f8fafc; padding: 1.8rem 1.5rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid var(--hr-accent-3); }
         .header-bar h1 { margin: 0; font-family: 'Press Start 2P', cursive; font-size: 2.2rem; color: #ffffff; letter-spacing: 0.08em; text-shadow: 3px 3px 0px rgba(0,0,0,0.3); }
         .header-bar .subtitle { font-family: 'Press Start 2P', cursive; font-size: 0.7rem; color: #fbbf24; margin-top: 0.5rem; letter-spacing: 0.12em; text-transform: uppercase; }
-        .header-bar .scheduler-status { font-size: 0.8rem; text-align: right; color: #e2e8f0; }
+        .header-bar .scheduler-status { font-size: 0.8rem; text-align: right; color: var(--hr-text); }
         .header-bar .scheduler-status .label { color: #cbd5e1; }
-        .header-bar .scheduler-status .running { color: #4ade80; font-weight: bold; }
+        .header-bar .scheduler-status .running { color: var(--hr-ok); font-weight: bold; }
+        /* The compact header inside homerun2-portal (README there, "Embedded
+           header"): one line on the portal's surface, no brand, the subtitle
+           on the left and the scheduler state on the right. */
+        .hr-embedded .header-bar { font-family: var(--hr-font, system-ui, sans-serif); background: var(--hr-surface); border-bottom: 1px solid var(--hr-border); min-height: 44px; padding: 6px 16px; align-items: center; }
+        .hr-embedded .header-bar h1 { display: none; }
+        .hr-embedded .header-bar .subtitle { font-family: inherit; font-size: 13px; color: var(--hr-muted); margin: 0; letter-spacing: normal; text-transform: none; }
+        .hr-embedded .header-bar .scheduler-status { display: flex; gap: 12px; font-size: 12px; }
         .header-bar .scheduler-status .stopped { color: #f87171; font-weight: bold; }
 
-        .severity-error { color: #ff4444; font-weight: bold; }
-        .severity-warning { color: #f97316; font-weight: bold; }
-        .severity-success { color: #4ade80; font-weight: bold; }
-        .severity-info { color: #60a5fa; font-weight: bold; }
+        .severity-error { color: var(--hr-error); font-weight: bold; }
+        .severity-warning { color: var(--hr-warning); font-weight: bold; }
+        .severity-success { color: var(--hr-ok); font-weight: bold; }
+        .severity-info { color: var(--hr-info); font-weight: bold; }
         .severity-debug { color: #64748b; }
 
-        .composer-panel { background: #1e293b; border: 1px solid #334155; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem; }
+        .composer-panel { background: var(--hr-card); border: 1px solid var(--hr-border); padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem; }
         .composer-panel h3 { color: #818cf8; margin-top: 0; font-size: 1rem; }
-        .composer-panel label { color: #94a3b8; font-size: 0.85rem; }
-        .composer-panel input, .composer-panel select, .composer-panel textarea { background: #0f172a; border-color: #334155; color: #e2e8f0; font-size: 0.85rem; }
+        .composer-panel label { color: var(--hr-muted); font-size: 0.85rem; }
+        .composer-panel input, .composer-panel select, .composer-panel textarea { background: var(--hr-surface); border-color: var(--hr-border); color: var(--hr-text); font-size: 0.85rem; }
         .composer-panel input:focus, .composer-panel select:focus, .composer-panel textarea:focus { border-color: #818cf8; }
 
         .btn-row { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-top: 1rem; }
-        .btn-send { background: #6366f1; border-color: #6366f1; color: #fff; }
+        .btn-send { background: var(--hr-accent); border-color: var(--hr-accent); color: #fff; }
         .btn-send:hover { background: #4f46e5; border-color: #4f46e5; }
-        .btn-randomize { background: #f97316; border-color: #f97316; color: #fff; }
+        .btn-randomize { background: var(--hr-accent-3); border-color: var(--hr-accent-3); color: #fff; }
         .btn-randomize:hover { background: #ea580c; border-color: #ea580c; }
 
         #toast-area { min-height: 2.5rem; margin-top: 0.5rem; }
 
-        .log-panel { background: #1e293b; border: 1px solid #334155; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem; }
+        .log-panel { background: var(--hr-card); border: 1px solid var(--hr-border); padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem; }
         .log-panel h3 { color: #818cf8; margin-top: 0; font-size: 1rem; }
         table { font-size: 0.85rem; }
-        thead th { background: #1e293b; color: #818cf8; text-transform: uppercase; }
+        thead th { background: var(--hr-card); color: #818cf8; text-transform: uppercase; }
 
-        .build-footer { background: #1e293b; color: #475569; padding: 0.6rem 1.5rem; margin-top: 1rem; display: flex; gap: 1.5rem; font-size: 0.75rem; border-top: 1px solid #334155; }
+        .build-footer { background: var(--hr-card); color: #475569; padding: 0.6rem 1.5rem; margin-top: 1rem; display: flex; gap: 1.5rem; font-size: 0.75rem; border-top: 1px solid var(--hr-border); }
         .build-footer .label { color: #64748b; }
         .build-footer .value { color: #818cf8; }
 
@@ -53,12 +85,13 @@
         .toast-success { background: #065f46; color: #6ee7b7; padding: 0.75rem 1rem; border-radius: 0.375rem; border: 1px solid #059669; }
         .toast-error { background: #7f1d1d; color: #fca5a5; padding: 0.75rem 1rem; border-radius: 0.375rem; border: 1px solid #dc2626; }
     </style>
+    {{if .PortalTheme}}<link rel="stylesheet" href="/static/homerun2-tokens.css">{{end}}
 </head>
 <body>
     <div class="header-bar">
         <div>
             <h1>HOMERUN²</h1>
-            <div class="subtitle">demo pitcher</div>
+            <div class="subtitle">Message composer</div>
         </div>
         <div class="scheduler-status">
             <div><span class="label">scheduler:</span>
