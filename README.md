@@ -10,6 +10,8 @@ demo-pitcher
 |----------|--------|------|-------------|
 | `/health` | `GET` | None | Health check (returns version, commit, date) |
 | `/pitch` | `POST` | Bearer token | Submit a message to Redis Streams |
+| `/ui/manifest.json` | `GET` | None | Fragments offered to homerun2-portal (web UI only) |
+| `/ui/fragment/pitches` | `GET` | None | Scheduler state and the latest composer sends as bare HTML in the portal's `hr-*` classes |
 
 <details>
 <summary><b>Pitch a message</b></summary>
