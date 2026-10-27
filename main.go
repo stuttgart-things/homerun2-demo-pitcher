@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"runtime"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -304,6 +305,7 @@ func registerWebRoutes(
 		buildInfo,
 	)
 	webHandlers.SetBasePath(basePath)
+	webHandlers.AllowTargetURLs(strings.Split(homerun.GetEnv("ALLOWED_TARGET_URLS", ""), ",")...)
 
 	mux.HandleFunc("/", webHandlers.IndexHandler)
 	mux.HandleFunc("/composer/fields", webHandlers.ComposerFieldsHandler)

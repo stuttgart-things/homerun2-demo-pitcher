@@ -59,6 +59,8 @@ docker run \
 | `PITCH_TARGET` | Backend: `redis`, `omni-pitcher`, `both` or `file` | `redis` |
 | `OMNI_PITCHER_URL` | omni-pitcher endpoint, used by `omni-pitcher` and `both` | `http://localhost:4000` |
 | `OMNI_PITCHER_API_PATH` | Path appended to that endpoint | `generic` |
+| `TARGET_URL` | The composer's default *Target Pitcher URL* (else the profile's `target_url`, else `OMNI_PITCHER_URL`) | *(empty)* |
+| `ALLOWED_TARGET_URLS` | Comma-separated further URLs the composer may pitch to. Any other *Target Pitcher URL* is refused, because the request carries `AUTH_TOKEN` (#65) | *(empty)* |
 | `PITCHER_FILE` | Output file, used by `file` | `pitched.log` |
 | `REDIS_ADDR` | Redis server address | `localhost` |
 | `REDIS_PORT` | Redis server port | `6379` |

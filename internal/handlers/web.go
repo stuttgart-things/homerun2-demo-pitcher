@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -104,7 +105,11 @@ type WebHandlers struct {
 	sched            *scheduler.Scheduler
 	interval         string
 	defaultTargetURL string
-	build            BuildInfo
+	// allowedTargets are the composer's target_url values that may be
+	// pitched to (normalised, see normalizeTargetURL). The request carries
+	// AUTH_TOKEN, so a URL from the form is never trusted on its own (#65).
+	allowedTargets map[string]bool
+	build          BuildInfo
 	// basePath is the prefix the UI is served under (BASE_PATH); the
 	// templates put it in front of every URL as {{base}}.
 	basePath string
@@ -127,8 +132,10 @@ func NewWebHandlers(
 		sched:            sched,
 		interval:         interval,
 		defaultTargetURL: defaultTargetURL,
+		allowedTargets:   map[string]bool{},
 		build:            build,
 	}
+	h.AllowTargetURLs(defaultTargetURL)
 	funcs := template.FuncMap{"base": func() string { return h.basePath }}
 	h.templates = template.Must(template.New("").Funcs(funcs).ParseFS(tmplFS, "templates/*.html"))
 	return h
@@ -139,6 +146,21 @@ func NewWebHandlers(
 // (config.ParseBasePath).
 func (h *WebHandlers) SetBasePath(p string) {
 	h.basePath = p
+}
+
+// AllowTargetURLs adds URLs the composer may pitch to besides the default
+// target (ALLOWED_TARGET_URLS). Empty entries are ignored.
+func (h *WebHandlers) AllowTargetURLs(urls ...string) {
+	for _, u := range urls {
+		if n := normalizeTargetURL(u); n != "" {
+			h.allowedTargets[n] = true
+		}
+	}
+}
+
+// normalizeTargetURL makes "http://x/" and " http://x" match "http://x".
+func normalizeTargetURL(u string) string {
+	return strings.TrimRight(strings.TrimSpace(u), "/")
 }
 
 // IndexHandler serves the main page.
@@ -221,19 +243,21 @@ func (h *WebHandlers) ComposerSendHandler(w http.ResponseWriter, r *http.Request
 		Timestamp:      time.Now().Format(time.RFC3339),
 	}
 
-	targetURL := r.FormValue("target_url")
+	targetURL := normalizeTargetURL(r.FormValue("target_url"))
 
 	// Determine which pitcher to use.
 	var p pitcher.Pitcher
 	if targetURL != "" {
-		// User specified a URL — create an ad-hoc HTTP pitcher.
-		apiPath := r.FormValue("api_path")
-		if apiPath == "" {
-			apiPath = homerun.GetEnv("OMNI_PITCHER_API_PATH", "generic")
+		// Only a configured target: the request carries AUTH_TOKEN, and a URL
+		// from the form would hand it to whoever runs that host (#65).
+		if !h.allowedTargets[targetURL] {
+			slog.Warn("composer target_url not allowed", "target", targetURL)
+			h.renderToast(w, "error", "Target URL not allowed: only the configured pitcher targets")
+			return
 		}
 		p = &pitcher.HTTPPitcher{
 			Endpoint:   targetURL,
-			APIPath:    apiPath,
+			APIPath:    homerun.GetEnv("OMNI_PITCHER_API_PATH", "generic"),
 			AuthToken:  homerun.GetEnv("AUTH_TOKEN", ""),
 			HTTPClient: pitcher.DefaultHTTPClient(),
 		}
