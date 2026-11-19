@@ -2,7 +2,7 @@
 
 ## Project
 
-homerun2-demo-pitcher — demo-pitcher
+homerun2-demo-pitcher — Demo and test source for homerun2: a web composer and an optional scheduler that pitch sample messages into Redis Streams or to an omni-pitcher.
 
 ## Tech Stack
 

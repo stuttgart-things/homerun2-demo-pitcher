@@ -1,6 +1,6 @@
 # homerun2-demo-pitcher
 
-demo-pitcher
+Demo and test source for homerun2: a web composer and an optional scheduler that pitch sample messages into Redis Streams or to an omni-pitcher.
 
 [![Build & Test](https://github.com/stuttgart-things/homerun2-demo-pitcher/actions/workflows/build-test.yaml/badge.svg)](https://github.com/stuttgart-things/homerun2-demo-pitcher/actions/workflows/build-test.yaml)
 
